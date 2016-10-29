@@ -7,6 +7,8 @@ cmd_desc = {
   [20] = "READ VALUE",
   [30] = "WRITE VALUE",
   [40] = "DESCRIPTION VALUE",
+  [50] = "READ LIMIT LOW",
+  [51] = "READ LIMIT HIGH",
 }
 
 -- List all protocol fields
@@ -43,7 +45,7 @@ function p_myproto.dissector (buf, pkt, root)
   if (buf(5,1):uint() == 1) then
 	subtree:add(f_status,  buf(8,2)):append_text(" [Status ]")
   else
-	if (cmd_desc[buf(4,1):uint()] == "READ VALUE") then
+	if ((cmd_desc[buf(4,1):uint()] == "READ VALUE") or (cmd_desc[buf(4,1):uint()] == "READ LIMIT LOW") or (cmd_desc[buf(4,1):uint()] == "READ LIMIT HIGH")) then
 		subtree:add(f_group,  buf(8,4)):append_text(" [Group " .. buf(8,4):string() .. "]")
 		subtree:add(f_variable,  buf(12,4)):append_text(" [Variable " .. buf(12,4):string() .. "]")
 	end
