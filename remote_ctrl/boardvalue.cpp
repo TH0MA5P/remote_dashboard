@@ -95,21 +95,14 @@ QWidget *boardValue::dataDumpHex()
 
 #define EDITOR_BASE	10
 
-QWidget *boardValue::dataEditor()
+QString boardValue::getStringFromData(QByteArray &data)
 {
-    if (_editor)
-        delete _editor;
-    _editor = new QLineEdit("");
-    if (!(_value.writePermission)) {
-        _editor->setReadOnly(true);
-        _editor->setStyleSheet("color:grey");
-    }
-
+    QString text("");
     if (_value.type == type_string) {
-        _editor->setText(QString::fromUtf8(_data));
+       text = QString::fromUtf8(data);
     } else {
-        char *ptr = _data.data();
-        QString text("");
+        char *ptr = data.data();
+
         for (int i = 0; i < _value.nb_elem_x * _value.nb_elem_y; i++) {
             text.append(convertIntValue(ptr, EDITOR_BASE));
             ptr += value_type_size[_value.type];
@@ -120,8 +113,22 @@ QWidget *boardValue::dataEditor()
                     text.append("; ");
             }
         }
-        _editor->setText(text);
     }
+    return text;
+}
+
+QWidget *boardValue::dataEditor()
+{
+    if (_editor)
+        delete _editor;
+    _editor = new QLineEdit("");
+    if (!(_value.writePermission)) {
+        _editor->setReadOnly(true);
+        _editor->setStyleSheet("color:grey");
+    }
+
+    _editor->setText(getStringFromData(_data));
+
     return _editor;
 }
 
@@ -132,7 +139,9 @@ bool boardValue::getData(QByteArray &newData)
 
     if (_value.type == type_string)
     {
-        newData = QByteArray::fromHex(_editorHex->text().toLocal8Bit());
+        QString text = _editor->text();
+        text.truncate(_data.size()-1);
+        newData = QByteArray(text.toLocal8Bit());
     }
     else
     {

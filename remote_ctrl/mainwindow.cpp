@@ -68,6 +68,11 @@ void MainWindow::cmd_read_value(quint32 group, quint32 value_idx)
     prot->sendReadValue(group, value_idx);
 }
 
+void MainWindow::cmd_get_value_limit(quint32 group, quint32 value_idx, bool isLowLimit)
+{
+    prot->sendReadValueLimit(group, value_idx, isLowLimit);
+}
+
 void MainWindow::cmd_write_value(quint32 group, quint32 value_idx, QByteArray *buf)
 {
     prot->sendWriteValue(group, value_idx, buf);
@@ -137,7 +142,47 @@ void MainWindow::ans_get_desc_received(QDataStream &stream)
         return;
     qDebug() << "Receive get desc answer";
     QString string = getStringFromStream(stream);
-    ui->tableValues->setCellWidget(_read_value_idx, 5, new QLabel(string));
+    ui->tableValues->setCellWidget(_read_value_idx, 7, new QLabel(string));
+
+    cmd_get_value_limit(_list_values.at(_read_value_idx)->group(), _list_values.at(_read_value_idx)->id(), true);
+
+
+}
+
+void MainWindow::ans_get_limit_low_received(QDataStream &stream)
+{
+    if (_read_value_idx < 0 || _read_value_idx >= _list_values.size())
+        return;
+
+    qDebug() << "Receive get low limit answer";
+    boardValue *value = _list_values.at(_read_value_idx);
+
+    QByteArray dataStream;
+    dataStream.reserve(value->size());
+    if (stream.readRawData(dataStream.data(), value->size()) > 0)
+    {
+        QString string = value->getStringFromData(dataStream);
+        ui->tableValues->setCellWidget(_read_value_idx, 5, new QLabel(string));
+    }
+
+    cmd_get_value_limit(_list_values.at(_read_value_idx)->group(), _list_values.at(_read_value_idx)->id(), false);
+}
+
+void MainWindow::ans_get_limit_high_received(QDataStream &stream)
+{
+    if (_read_value_idx < 0 || _read_value_idx >= _list_values.size())
+        return;
+
+    qDebug() << "Receive get high limit answer";
+    boardValue *value = _list_values.at(_read_value_idx);
+
+    QByteArray dataStream;
+    dataStream.reserve(value->size());
+    if (stream.readRawData(dataStream.data(), value->size()) > 0)
+    {
+        QString string = value->getStringFromData(dataStream);
+        ui->tableValues->setCellWidget(_read_value_idx, 6, new QLabel(string));
+    }
 
     if (_read_value_idx + 1 < _list_values.size())
     {
@@ -170,6 +215,12 @@ void MainWindow::answer_received(QByteArray datagram)
      case CODE_CMD_DESC_VALUES:
          ans_get_desc_received(stream);
          break;
+     case CODE_CMD_READ_VALUES_LIMIT_LOW:
+         ans_get_limit_low_received(stream);
+         break;
+     case CODE_CMD_READ_VALUES_LIMIT_HIGH:
+         ans_get_limit_high_received(stream);
+         break;
      default:
          qDebug() << "Unhandled answer " << reply.cmd;
          break;
@@ -183,8 +234,9 @@ void MainWindow::on_sendValues_clicked()
     for (int i = 0; i < _list_values.count(); i++)
     {
         QByteArray newData;
-        if (_list_values.at(i)->getData(newData)) {
-            cmd_write_value(_list_values.at(_read_value_idx)->group(), _list_values.at(i)->id(), &newData);
+        boardValue* value = _list_values.at(i);
+        if (value->getData(newData)) {
+            cmd_write_value(value->group(),value->id(), &newData);
         }
     }
 }

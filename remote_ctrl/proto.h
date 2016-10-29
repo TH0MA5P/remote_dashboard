@@ -17,6 +17,7 @@ public:
     void sendListValue();
     void sendReadValue(quint32 group, quint32 id);
     void sendWriteValue(quint32 group, quint32 id, QByteArray *buf);
+    void sendReadValueLimit(quint32 group, quint32 id, bool isLowLimit);
     void sendGetDescValue(quint32 group, quint32 id);
 
 signals:

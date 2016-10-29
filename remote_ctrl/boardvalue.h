@@ -22,6 +22,8 @@ public:
     QWidget *dataEditor();
     QString info();
 
+    QString getStringFromData(QByteArray &data);
+
     void setData(QDataStream &stream) { stream.readRawData(_data.data(), _data.size()); }
     bool getData(QByteArray &buf);
 

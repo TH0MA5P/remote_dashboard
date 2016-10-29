@@ -62,6 +62,26 @@ void proto::sendReadValue(quint32 group, quint32 id)
     sendFrame(CODE_CMD_READ_VALUES, (const char *)&cmd_read, sizeof(cmd_read));
 }
 
+void proto::sendReadValueLimit(quint32 group, quint32 id, bool isLowLimit)
+{
+    struct T_READ_VALUE cmd_read;
+    uint8_t cmd;
+
+    cmd_read.id.group = qToBigEndian(group);
+    cmd_read.id.name = qToBigEndian(id);
+
+    if (isLowLimit)
+    {
+        cmd = CODE_CMD_READ_VALUES_LIMIT_LOW;
+    }
+    else
+    {
+        cmd = CODE_CMD_READ_VALUES_LIMIT_HIGH;
+    }
+
+    sendFrame(cmd, (const char *)&cmd_read, sizeof(cmd_read));
+}
+
 void proto::sendGetDescValue(quint32 group, quint32 id)
 {
     struct T_GET_DESC_VALUE cmd_get_desc;
