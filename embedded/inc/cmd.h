@@ -39,7 +39,9 @@ T_STATUS CMD_descValue(uint16_t * sizeData, uint8_t * ptrDataCmd, uint8_t * ptrD
 
 T_STATUS CMD_listValues(uint16_t * sizeData, uint8_t * ptrDataCmd, uint8_t * ptrDataReply);
 
+T_STATUS CMD_readValueLimitLow(uint16_t * sizeData, uint8_t * ptrDataCmd, uint8_t * ptrDataReply);
 
+T_STATUS CMD_readValueLimitHigh(uint16_t * sizeData, uint8_t * ptrDataCmd, uint8_t * ptrDataReply);
 #endif /*WRITE_VALUE_H_*/
 
 ///

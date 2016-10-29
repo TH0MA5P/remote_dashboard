@@ -39,6 +39,8 @@ static const T_ACQ_ETH_CMD_CB cmdArray[] =
     {CODE_CMD_READ_VALUES, CMD_readValue},
     {CODE_CMD_WRITE_VALUES, CMD_writeValue},
     {CODE_CMD_DESC_VALUES, CMD_descValue},
+    {CODE_CMD_READ_VALUES_LIMIT_LOW, CMD_readValueLimitLow},
+    {CODE_CMD_READ_VALUES_LIMIT_HIGH, CMD_readValueLimitHigh},
 };
 
 ////////////////////////////////////////////////////////////////////////////////

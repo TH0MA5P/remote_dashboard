@@ -18,9 +18,25 @@ static float vMaxAdc = 2.5;
 static float dacDc[NB_INFO_DAC] = {1.25, 1., 0., 12};
 static float dacAc[NB_INFO_DAC] = {2.5,  1., 0., 23};
 static uint32_t maxGen = 25;
+static uint32_t maxGen2 = 250;
 static float vTest = 3.1445454754;
+
 /// @}
 
+
+/// name Limites
+/// @{
+static const uint32_t maxGenMin = 2;
+static const uint32_t maxGenMax = 250;
+
+static const float manufGainMin[NB_CAL] = {1.0, 1.1, 1.2};
+static const float manufGainMax[NB_CAL] = {1.2, 1.3, 1.4};
+
+static const char * stringMin = "string_tes0";
+static const char * stringMax = "string_tes9";
+
+/// @}
+///
 static float manufGain[NB_CAL] = {1.1, 1.2, 1.3};
 static float manufOffset[NB_CAL]= {2.1, 2.2, 2.3};
 
@@ -90,26 +106,28 @@ int main(void)
 {
     LOG(LOG_INFO, "Start of program");
 
+    uint32_t teee = 88;
+
     UDP_init(UDP_PORT);
 
-    VALUE_EXPORTED_init("Processeur embarqué");
+    VALUE_EXPORTED_init("MicroController");
 
     //VALUE_EXPORTED_add(VALUES_ArrayGeneric[0]);
 
-    VALUE_EXPORTED_add_Ptr("TOTO", "TGEN", 1, 1 ,&maxGen, true,   true,  type_int32, "Generation");
-    VALUE_EXPORTED_add_Ptr("TOTO", "DACD", NB_INFO_DAC, 1  ,dacDc, true,   false, type_float, "Voltage direct ADC");       // Infos DAC DC
-    VALUE_EXPORTED_add_Ptr("TOTO", "DACA", NB_INFO_DAC, 1  ,dacAc,   true,   false, type_float, "Voltage alternative ADC");        // Infos DAC AC
-    VALUE_EXPORTED_add_Ptr("TOTO", "TGEN",  1, 1  ,&maxGen,  true,   true,  type_int32, "Generation");        // Infos DAC AC
-    VALUE_EXPORTED_add_Ptr("TOTO", "TEST",  1, 1  ,&vTest,    true,   true,  type_float, "Test value !!");        // Vmax ADC
-    VALUE_EXPORTED_add_Ptr("TOTO", "TAB ",  3, 2  ,&array,   true,   true,  type_int16, "Tableau");       // Vmax ADC
+    VALUE_EXPORTED_add_Ptr("TOT1", "TGEN", 1, 1 ,&maxGen, true,   true,  type_int32, &maxGenMin, &maxGenMax, "Generation");
+    VALUE_EXPORTED_add_Ptr("TOT2", "DACD", NB_INFO_DAC, 1  ,dacDc, true,   false, type_float, NULL, NULL, "Voltage direct ADC");       // Infos DAC DC
+    VALUE_EXPORTED_add_Ptr("TOT3", "DACA", NB_INFO_DAC, 1  ,dacAc,   true,   false, type_float, NULL, NULL, "Voltage alternative ADC");        // Infos DAC AC
+    VALUE_EXPORTED_add_Ptr("TOT4", "TGEN",  1, 1  ,&maxGen2,  true,   true,  type_int32, NULL, NULL, "Generation 2");        // Infos DAC AC
+    VALUE_EXPORTED_add_Ptr("TOT5", "TEST",  1, 1  ,&vTest,    true,   true,  type_float, NULL, NULL, "Test value !!");        // Vmax ADC
+    VALUE_EXPORTED_add_Ptr("TOT6", "TAB ",  3, 2  ,&array,   true,   true,  type_int16, NULL, NULL, "Tableau");       // Vmax ADC
 
-    VALUE_EXPORTED_add_Ptr("TOTO", "STRG",  strlen(string), 1, string,   true, true,  type_string, "string");
-
-
-    VALUE_EXPORTED_add_Fct("TOTO", "MGAI", NB_CAL, 1  ,readManufGain, writeManufGain,   true,   true,  type_float, "Calibration gain");      // Gains de calibration
-    VALUE_EXPORTED_add_Fct("TOTO", "MOFF",  NB_CAL, 1  ,readManufOffset, writeManufOffset,   true,   true,  type_float, "Offset gain");      // Offset de calibration
+    VALUE_EXPORTED_add_Ptr("TOT7", "STRG",  strlen(string), 1, string,   true, true,  type_string, stringMin, stringMax, "string");
 
 
+    VALUE_EXPORTED_add_Fct("TOT8", "MGAI", NB_CAL, 1  ,readManufGain, writeManufGain,   true,   true,  type_float, manufGainMin, manufGainMax, "Calibration gain");      // Gains de calibration
+    VALUE_EXPORTED_add_Fct("TOT9", "MOFF",  NB_CAL, 1  ,readManufOffset, writeManufOffset,   true,   true,  type_float, NULL, NULL, "Offset gain");      // Offset de calibration
+
+    VALUE_EXPORTED_add_Ptr("TOTO", "MTTT",  1, 1  ,&teee,   true,   true,  type_int32, NULL, NULL, "Tee");
 
     while (1)
     {

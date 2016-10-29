@@ -111,7 +111,10 @@ bool VALUE_EXPORTED_add_Ptr(char group[sizeof(uint32_t)],
                             char name[sizeof(uint32_t)],
                             uint16_t nb_elem_x,
                             uint16_t nb_elem_y, void *ptr_value, bool readPermission,
-                            bool writePermission, value_type_t type, char desc[DESC_SIZE])
+                            bool writePermission, value_type_t type,
+                            void *ptr_value_min,
+                            void *ptr_value_max,
+                            char desc[DESC_SIZE])
 {
     T_VALUE value;
     memcpy(&value.info.id.group, group, sizeof(uint32_t));
@@ -119,6 +122,8 @@ bool VALUE_EXPORTED_add_Ptr(char group[sizeof(uint32_t)],
     value.info.nb_elem_x = nb_elem_x;
     value.info.nb_elem_y = nb_elem_y;
     value.ptr_value = ptr_value;
+    value.ptr_value_min = ptr_value_min;
+    value.ptr_value_max = ptr_value_max;
     value.info.readPermission = readPermission;
     value.info.writePermission = writePermission;
     value.info.type = type;
@@ -134,7 +139,10 @@ bool VALUE_EXPORTED_add_Fct(char group[sizeof(uint32_t)],
                             uint16_t nb_elem_x,
                             uint16_t nb_elem_y, T_READ_WRITE_CB readFunction,
                             T_READ_WRITE_CB writeFunction, bool readPermission,
-                            bool writePermission, value_type_t type, char desc[DESC_SIZE])
+                            bool writePermission, value_type_t type,
+                            void *ptr_value_min,
+                            void *ptr_value_max,
+                            char desc[DESC_SIZE])
 {
     T_VALUE value;
     memcpy(&value.info.id.group, group, sizeof(uint32_t));
@@ -142,6 +150,8 @@ bool VALUE_EXPORTED_add_Fct(char group[sizeof(uint32_t)],
     value.info.nb_elem_x = nb_elem_x;
     value.info.nb_elem_y = nb_elem_y;
     value.ptr_value = NULL;
+    value.ptr_value_min = ptr_value_min;
+    value.ptr_value_max = ptr_value_max;
     value.info.readPermission = readPermission;
     value.info.writePermission = writePermission;
     value.info.type = type;
@@ -206,6 +216,59 @@ bool VALUE_EXPORTED_read(uint32_t group, uint32_t id, uint8_t * data, uint16_t *
         LOG(LOG_INFO, "Read invalid val %d", id);
     }
 
+    return ret;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+/// Lit la donnee correspondante a l'identifiant
+///
+/// \param  id             Identifiant de la donnee a alire
+/// \param  data           Pointeur sur lequel on doit placer les donnees lues
+/// \param  size           Taille des donnees lues
+/// \return                Status de retour
+////////////////////////////////////////////////////////////////////////////////
+bool VALUE_EXPORTED_readLimit(uint32_t group, uint32_t id, uint8_t isLowLimit, uint8_t * data, uint16_t * size)
+{
+    T_VALUE * value = getValue(group, id);
+    *size = 0;
+    bool ret = false;
+
+    if (value != NULL)
+    {
+        *size = value->info.nb_elem_y * value->info.nb_elem_x * value_type_size[value->info.type];
+        uint32_t buf[value->info.nb_elem_x * value->info.nb_elem_y];        // le processuer ne supporte pas les lectures / ecritures non alignées
+        if (isLowLimit)
+        {
+            if (value->ptr_value_min != NULL)
+            {
+                convertValue(buf, value->ptr_value_min, value);
+            }
+            else
+            {
+                *size = 0;
+            }
+        }
+        else
+        {
+            if (value->ptr_value_min != NULL)
+            {
+                convertValue(buf, value->ptr_value_max, value);
+            }
+            else
+            {
+                *size = 0;
+            }
+        }
+
+        memcpy(data, buf, *size);
+        ret = true;
+    }
+    else
+    {
+        LOG(LOG_INFO, "Read invalid limit val %d", id);
+    }
+
+    LOG(LOG_INFO, "Read limit val %d (is low limit %d)", id, isLowLimit);
     return ret;
 }
 

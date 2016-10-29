@@ -84,6 +84,48 @@ T_STATUS CMD_readValue(uint16_t * sizeData, uint8_t * ptrDataCmd, uint8_t * ptrD
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+/// Traitement de la requete READ_VALUE_LIMIT
+///
+/// \param  ptrDataCmd     Pointeur sur lequel on doit lire la commande les donnees
+/// \param  ptrDataReply   Pointeur sur lequel on doit ecrire les donnees
+/// \param  sizeData       Taille du message
+/// \return                Status de retour
+////////////////////////////////////////////////////////////////////////////////
+T_STATUS CMD_readValueLimitLow(uint16_t * sizeData, uint8_t * ptrDataCmd, uint8_t * ptrDataReply)
+{
+    T_STATUS res = OK;
+    struct T_READ_VALUE readValueLimit;
+    bool readSucceded;
+
+    memcpy(&readValueLimit, ptrDataCmd, *sizeData);
+
+    readSucceded = VALUE_EXPORTED_readLimit(ntohl(readValueLimit.id.group), ntohl(readValueLimit.id.name), true, ptrDataReply, sizeData);
+
+    return res;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+/// Traitement de la requete READ_VALUE_LIMIT
+///
+/// \param  ptrDataCmd     Pointeur sur lequel on doit lire la commande les donnees
+/// \param  ptrDataReply   Pointeur sur lequel on doit ecrire les donnees
+/// \param  sizeData       Taille du message
+/// \return                Status de retour
+////////////////////////////////////////////////////////////////////////////////
+T_STATUS CMD_readValueLimitHigh(uint16_t * sizeData, uint8_t * ptrDataCmd, uint8_t * ptrDataReply)
+{
+    T_STATUS res = OK;
+    struct T_READ_VALUE readValueLimit;
+    bool readSucceded;
+
+    memcpy(&readValueLimit, ptrDataCmd, *sizeData);
+
+    readSucceded = VALUE_EXPORTED_readLimit(ntohl(readValueLimit.id.group), ntohl(readValueLimit.id.name), false, ptrDataReply, sizeData);
+
+    return res;
+}
+
+////////////////////////////////////////////////////////////////////////////////
 /// Envoie la commande a la requete WHO
 ///
 /// \param  ptrDataCmd   pointeur sur lequel on doit lire la commande les donnees
