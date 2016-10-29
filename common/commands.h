@@ -17,11 +17,13 @@ extern "C" {
 
 /// @name Codes des commandes
 /// @{
-#define CODE_CMD_WHO		0
-#define CODE_CMD_LIST_VALUES	10
-#define CODE_CMD_READ_VALUES	20
-#define CODE_CMD_WRITE_VALUES	30
-#define CODE_CMD_DESC_VALUES	40
+#define CODE_CMD_WHO                        0
+#define CODE_CMD_LIST_VALUES                10
+#define CODE_CMD_READ_VALUES                20
+#define CODE_CMD_WRITE_VALUES               30
+#define CODE_CMD_DESC_VALUES                40
+#define CODE_CMD_READ_VALUES_LIMIT_LOW      50
+#define CODE_CMD_READ_VALUES_LIMIT_HIGH     51
 /// @}
 
 /// Structure correspondante a la trame de découverte
