@@ -1,5 +1,8 @@
+#include "../common/commands.h"
+#include "../common/values.h"
+#include "proto.h"
 #include "board.h"
-#include "acq_proto.h"
+
 
 board::board(QObject *parent) : QObject(parent)
 {
@@ -13,21 +16,25 @@ void board::clear_values() {
     _list_values.clear();
 }
 
-
-void board::cmd_get_desc_value(quint32 value_idx)
+void board::cmd_get_list()
 {
-    prot->sendGetDescValue(value_idx);
+    prot->sendListValue();
 }
 
-void board::cmd_read_value(quint32 value_idx)
+void board::cmd_get_desc_value(quint32 group, quint32 value_idx)
+{
+    prot->sendGetDescValue(group, value_idx);
+}
+
+void board::cmd_read_value(quint32 group, quint32 value_idx)
 {
     qDebug() << "read value" << value_idx;
-    prot->sendReadValue(value_idx);
+    prot->sendReadValue(group, value_idx);
 }
 
-void board::cmd_write_value(quint32 value_idx, QByteArray *buf)
+void board::cmd_write_value(quint32 group, quint32 value_idx, QByteArray *buf)
 {
-    prot->sendWriteValue(value_idx, buf);
+    prot->sendWriteValue(group, value_idx, buf);
 }
 
 void board::ans_who_received(QDataStream &stream)
@@ -43,16 +50,17 @@ void board::ans_list_received(QDataStream &stream)
     qDebug() << nb_value << " values found";
 
     for (int i = 0; i < nb_value; i++) {
-        qint32 id;
-        qint16 nb_x, nb_y, flags;
-        stream >> id >> nb_x >> nb_y >> flags;
-        boardValue *value = new boardValue(id, flags, nb_x, nb_y);
+        qint32 id, group;
+        qint16 nb_x, nb_y;
+        uint8_t read, write, type;
+        stream >> group >> id >> nb_x >> nb_y >> read >> write >> type;
+        boardValue *value = new boardValue(group, id, nb_x, nb_y, read, write, type);
         _list_values.append(value);
         qDebug() << "New value " << id << " " << value->str_id();
     }
     if (nb_value > 0) {
         _read_value_idx = 0;
-        cmd_read_value(_list_values.at(_read_value_idx)->id());
+        cmd_read_value(_list_values.at(_read_value_idx)->group(), _list_values.at(_read_value_idx)->id());
     }
 }
 
@@ -64,7 +72,7 @@ void board::ans_read_received(QDataStream &stream)
     value->setData(stream);
 
     qDebug() << "Value " << value->str_id() << " ready to display";
-    cmd_get_desc_value(_list_values.at(_read_value_idx)->id());
+    cmd_get_desc_value(_list_values.at(_read_value_idx)->group(), _list_values.at(_read_value_idx)->id());
 }
 
 QString board::getStringFromStream(QDataStream &stream)
@@ -85,7 +93,7 @@ void board::ans_get_desc_received(QDataStream &stream)
     if (_read_value_idx + 1 < _list_values.size())
     {
         _read_value_idx++;
-        cmd_read_value(_list_values.at(_read_value_idx)->id());
+        cmd_read_value(_list_values.at(_read_value_idx)->group(), _list_values.at(_read_value_idx)->id());
     }
 }
 
@@ -101,19 +109,19 @@ void board::answer_received(QByteArray datagram)
          qDebug() << "Board returned error status " << status << " on cmd " << cmd << " : " << msg_error;
          return;
      }
-     switch ((cmd_type_t)cmd) {
-     case CMD_WHO:
+     switch (cmd) {
+     case CODE_CMD_WHO:
          ans_who_received(stream);
          break;
-     case CMD_LIST_VALUE:
+     case CODE_CMD_LIST_VALUES:
          ans_list_received(stream);
          break;
-     case CMD_READ_VALUE:
+     case CODE_CMD_READ_VALUES:
          ans_read_received(stream);
          break;
-     case CMD_WRITE_VALUE:
+     case CODE_CMD_WRITE_VALUES:
          break;
-     case CMD_GET_DESC_VALUE:
+     case CODE_CMD_DESC_VALUES:
          ans_get_desc_received(stream);
          break;
      default:

@@ -11,6 +11,11 @@
 //                                                      Defines & Types exportes
 ////////////////////////////////////////////////////////////////////////////////
 
+#include <stdint.h>
+
+#include "../common/protocol.h"
+#include "../common/values.h"
+
 #ifdef __cplusplus
 extern "C" {
 #endif

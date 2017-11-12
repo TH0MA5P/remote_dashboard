@@ -16,6 +16,22 @@ boardValue::boardValue(struct T_VALUE_INFO value) :
     _data.resize(value_type_size[_value.type] * _value.nb_elem_x * _value.nb_elem_y);
 }
 
+boardValue::boardValue(qint32 group, qint32 id, qint16 nb_x, qint16 nb_y,
+                       uint8_t readPermission, uint8_t writePermission, uint8_t type) :
+    _editor(0),
+    _editorHex(0)
+{
+    _value.id.group = group;
+    _value.id.name = id;
+    _value.nb_elem_x = nb_x;
+    _value.nb_elem_y = nb_y;
+    _value.readPermission = readPermission;
+    _value.writePermission = writePermission;
+    _value.type = type;
+
+    _data.resize(value_type_size[_value.type] * _value.nb_elem_x * _value.nb_elem_y);
+}
+
 QString boardValue::str_id()
 {
     char str[5];

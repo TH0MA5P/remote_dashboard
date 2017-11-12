@@ -1,5 +1,5 @@
-#ifndef VALUES_H
-#define VALUES_H
+#ifndef BOARD_H
+#define BOARD_H
 
 #include <QObject>
 #include <QList>
@@ -13,9 +13,11 @@ public:
     explicit board(QObject *parent = 0);
     void clear_values();
 
-    void cmd_get_desc_value(quint32 value_idx);
-    void cmd_read_value(quint32 value_idx);
-    void cmd_write_value(quint32 value_idx, QByteArray *buf);
+    void cmd_get_list();
+    void cmd_get_desc_value(quint32 group, quint32 value_idx);
+    void cmd_read_value(quint32 group, quint32 value_idx);
+    void cmd_write_value(quint32 group, quint32 value_idx, QByteArray *buf);
+
     void ans_who_received(QDataStream &stream);
     void ans_list_received(QDataStream &stream);
     void ans_read_received(QDataStream &stream);

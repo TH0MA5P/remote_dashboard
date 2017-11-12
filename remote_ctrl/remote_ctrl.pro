@@ -12,12 +12,18 @@ TEMPLATE = app
 SOURCES += main.cpp\
            mainwindow.cpp \
            boardvalue.cpp \
-    proto.cpp
+           proto.cpp \
+           board.cpp
 
 HEADERS  += mainwindow.h \
             boardvalue.h \
-            ../common/udp.h \
-    proto.h
+            ../common/commands.h \
+            ../common/protocol.h \
+            ../common/trace.h \
+            ../common/udpProtocol.h \
+            ../common/values.h \
+            proto.h \
+            board.h
 
 
 FORMS    += mainwindow.ui
