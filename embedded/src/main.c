@@ -12,7 +12,7 @@
 #define NB_INFO_DAC                                 4
 #define NB_CAL                                      3
 
-/// name Valeurs utiles pour le BACQ (constantes)
+/// name Valeurs utiles pour
 /// @{
 static float vMaxAdc = 2.5;
 static float dacDc[NB_INFO_DAC] = {1.25, 1., 0., 12};
@@ -38,11 +38,13 @@ static const char * stringMax = "string_tes9";
 /// @}
 ///
 static float manufGain[NB_CAL] = {1.1, 1.2, 1.3};
+
+static char * string = "string_test";
+
 static float manufOffset[NB_CAL]= {2.1, 2.2, 2.3};
 
 static uint16_t array[3][2]= {{1, 2}, {3, 4}, {5, 6}};
 
-static char * string = "string_test";
 
 ////////////////////////////////////////////////////////////////////////////////
 /// Ecrit les gains de calibration de la carte CA16
@@ -120,13 +122,9 @@ int main(void)
     VALUE_EXPORTED_add_Ptr("TOT4", "TGEN",  1, 1  ,&maxGen2,  true,   true,  type_int32, NULL, NULL, "Generation 2");        // Infos DAC AC
     VALUE_EXPORTED_add_Ptr("TOT5", "TEST",  1, 1  ,&vTest,    true,   true,  type_float, NULL, NULL, "Test value !!");        // Vmax ADC
     VALUE_EXPORTED_add_Ptr("TOT6", "TAB ",  3, 2  ,&array,   true,   true,  type_int16, NULL, NULL, "Tableau");       // Vmax ADC
-
-    VALUE_EXPORTED_add_Ptr("TOT7", "STRG",  strlen(string), 1, string,   true, true,  type_string, stringMin, stringMax, "string");
-
-
     VALUE_EXPORTED_add_Fct("TOT8", "MGAI", NB_CAL, 1  ,readManufGain, writeManufGain,   true,   true,  type_float, manufGainMin, manufGainMax, "Calibration gain");      // Gains de calibration
     VALUE_EXPORTED_add_Fct("TOT9", "MOFF",  NB_CAL, 1  ,readManufOffset, writeManufOffset,   true,   true,  type_float, NULL, NULL, "Offset gain");      // Offset de calibration
-
+    VALUE_EXPORTED_add_Ptr("TOT6", "STRG",  strlen(string), 1, string,   true, true,  type_string, stringMin, stringMax, "string");
     VALUE_EXPORTED_add_Ptr("TOTO", "MTTT",  1, 1  ,&teee,   true,   true,  type_int32, NULL, NULL, "Tee");
 
     while (1)

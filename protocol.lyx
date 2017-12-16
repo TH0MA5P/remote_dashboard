@@ -112,7 +112,7 @@ figs-within-sections
 \tocdepth 2
 \paragraph_separation indent
 \paragraph_indentation default
-\quotes_language swedish
+\quotes_language english
 \papercolumns 1
 \papersides 1
 \paperpagestyle default
@@ -205,26 +205,6 @@ TCP :
 IP : 
 \emph default
 Internet Protocol
-\end_layout
-
-\begin_layout Itemize
-
-\emph on
-ARP : 
-\emph default
-Address Resolution Protocol
-\end_layout
-
-\begin_layout Itemize
-DHCP : Dynamic Host Configuration Protocol
-\end_layout
-
-\begin_layout Itemize
-
-\emph on
-MAC :
-\emph default
- Media Access Control
 \end_layout
 
 \begin_layout Itemize

@@ -10,9 +10,7 @@
 // Include libraries
 #include <stdint.h>
 #include <stdbool.h>
-#include <string.h>
 #include <arpa/inet.h>
-#include <sys/socket.h>
 
 // Include applicatif
 #include "../common/values.h"
@@ -137,6 +135,8 @@ T_STATUS CMD_who(uint16_t * sizeData, uint8_t * ptrDataCmd, uint8_t * ptrDataRep
 {
     struct T_WHO whoAcq;
     *sizeData = sizeof(whoAcq);
+
+    LOG(LOG_INFO, "Who received");
 
     strncpy((char *)whoAcq.desc, (char *)VALUE_EXPORTED_GetProcDesc(), DESC_SIZE);
 

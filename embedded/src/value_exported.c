@@ -62,6 +62,8 @@ static void convertValue(void *dst, void *src, T_VALUE *def)
                 *((int32_t *)dst + offset + 1) = ntohl(*((int32_t *)src + offset + 1));
     #endif
                 break;
+            case type_int8:
+            case type_string:
             default:
                 *((int8_t *)dst + offset) = *((int8_t *)src + offset);
                 break;
@@ -70,12 +72,34 @@ static void convertValue(void *dst, void *src, T_VALUE *def)
     }
 }
 
+static void printId(uint32_t id, char * str)
+{
+    for (int i = 0; i < 4; i++)
+        str[i] = id >> (24 - (i << 3));    // id is BigEndian
+}
+
+static void printGroupName(uint32_t group, uint32_t name)
+{
+    char str[16];
+    memset(str, 0, sizeof(str));
+
+    printId(group, &str[0]);
+    str[4] = ' ';
+    printId(name, &str[5]);
+    str[9] = '\0';
+
+    LOG(LOG_INFO, "Value for %s", str);
+
+}
+
 static T_VALUE * getValue(uint32_t group, uint32_t name)
 {
     uint16_t i;
     T_VALUE * value = NULL;
 
-    LOG(LOG_INFO, "Get value for %d %d", group, name);
+    LOG(LOG_INFO, "Get value");
+    printGroupName(group, name);
+
 
     for (i = 0; i < VALUE_EXPORTED_nbInfo(); i++)
     {
@@ -142,7 +166,7 @@ bool VALUE_EXPORTED_add_Fct(char group[sizeof(uint32_t)],
                             bool writePermission, value_type_t type,
                             void *ptr_value_min,
                             void *ptr_value_max,
-                            char desc[DESC_SIZE])
+                            char desc[])
 {
     T_VALUE value;
     memcpy(&value.info.id.group, group, sizeof(uint32_t));
@@ -316,7 +340,7 @@ bool VALUE_EXPORTED_write(uint32_t group, uint32_t name, uint8_t * data)
     if (value != NULL)
     {
         size = value->info.nb_elem_x * value->info.nb_elem_y * value_type_size[value->info.type];
-        uint32_t buf[value->info.nb_elem_x * value->info.nb_elem_x];        // le processuer ne supporte pas les lectures / ecritures non alignées
+        uint32_t buf[value->info.nb_elem_x * value->info.nb_elem_x];        // le processeur ne supporte pas les lectures / ecritures non alignées
         memcpy(buf, data, size);
 
         if (value->writeFunction)

@@ -9,11 +9,11 @@
 
 #include "../common/values.h"
 
-class boardValue
+class BoardValue
 {
 public:
-    explicit boardValue(struct T_VALUE_INFO value);
-    explicit boardValue(qint32 group, qint32 id, qint16 nb_x, qint16 nb_y,
+    explicit BoardValue(struct T_VALUE_INFO value);
+    explicit BoardValue(qint32 group, qint32 id, qint16 nb_x, qint16 nb_y,
                         uint8_t readPermission, uint8_t writePermission, uint8_t type);
     qint32 id() { return _value.id.name; }
     qint32 group() { return _value.id.group; }
@@ -26,8 +26,12 @@ public:
 
     QString getStringFromData(QByteArray &data);
 
-    void setData(QDataStream &stream) { stream.readRawData(_data.data(), _data.size()); }
+    void setData(QDataStream &stream);
     bool getData(QByteArray &buf);
+
+    QString desc;
+    QString minVal;
+    QString maxVal;
 
 private:
 	QString convertIntValue(void *src, int base);
@@ -36,6 +40,8 @@ private:
 private:
     struct T_VALUE_INFO _value;
     QByteArray _data;
+    QString value;
+    QString valueHex;
     QLineEdit *_editor;
     QLineEdit *_editorHex;
 };

@@ -4,46 +4,55 @@
 #include "board.h"
 
 
-board::board(QObject *parent) : QObject(parent)
+Board::Board(QObject *parent) : QObject(parent),
+    prot(new proto())
 {
     connect(prot, SIGNAL(signalReceived(QByteArray)), this, SLOT(answer_received(QByteArray)));
 }
 
-void board::clear_values() {
-    foreach (boardValue *value, _list_values) {
+void Board::clear_values() {
+    foreach (BoardValue *value, _list_values) {
         delete value;
     }
     _list_values.clear();
 }
 
-void board::cmd_get_list()
+void Board::cmd_get_list()
 {
     prot->sendListValue();
 }
 
-void board::cmd_get_desc_value(quint32 group, quint32 value_idx)
+
+void Board::cmd_get_desc_value(quint32 group, quint32 value_idx)
 {
     prot->sendGetDescValue(group, value_idx);
 }
 
-void board::cmd_read_value(quint32 group, quint32 value_idx)
+void Board::cmd_read_value(quint32 group, quint32 value_idx)
 {
     qDebug() << "read value" << value_idx;
     prot->sendReadValue(group, value_idx);
 }
 
-void board::cmd_write_value(quint32 group, quint32 value_idx, QByteArray *buf)
+void Board::cmd_write_value(quint32 group, quint32 value_idx, QByteArray *buf)
 {
     prot->sendWriteValue(group, value_idx, buf);
 }
 
-void board::ans_who_received(QDataStream &stream)
+void Board::cmd_get_value_limit(quint32 group, quint32 value_idx, bool isLowLimit)
 {
+    prot->sendReadValueLimit(group, value_idx, isLowLimit);
+}
+
+void Board::ans_who_received(QDataStream &stream)
+{
+    qDebug() << "Who received";
     boardName = getStringFromStream(stream);
 }
 
-void board::ans_list_received(QDataStream &stream)
+void Board::ans_list_received(QDataStream &stream)
 {
+    qDebug() << "List received";
     qint16 nb_value;
     stream >> nb_value;
 
@@ -54,7 +63,7 @@ void board::ans_list_received(QDataStream &stream)
         qint16 nb_x, nb_y;
         uint8_t read, write, type;
         stream >> group >> id >> nb_x >> nb_y >> read >> write >> type;
-        boardValue *value = new boardValue(group, id, nb_x, nb_y, read, write, type);
+        BoardValue *value = new BoardValue(group, id, nb_x, nb_y, read, write, type);
         _list_values.append(value);
         qDebug() << "New value " << id << " " << value->str_id();
     }
@@ -64,18 +73,18 @@ void board::ans_list_received(QDataStream &stream)
     }
 }
 
-void board::ans_read_received(QDataStream &stream)
+void Board::ans_read_received(QDataStream &stream)
 {
     if (_read_value_idx < 0 || _read_value_idx >= _list_values.size())
         return;
-    boardValue *value = _list_values.at(_read_value_idx);
+    BoardValue *value = _list_values.at(_read_value_idx);
     value->setData(stream);
 
     qDebug() << "Value " << value->str_id() << " ready to display";
     cmd_get_desc_value(_list_values.at(_read_value_idx)->group(), _list_values.at(_read_value_idx)->id());
 }
 
-QString board::getStringFromStream(QDataStream &stream)
+QString Board::getStringFromStream(QDataStream &stream)
 {
     char desc[100];
     stream.readRawData(desc, 100);
@@ -83,21 +92,62 @@ QString board::getStringFromStream(QDataStream &stream)
     return string;
 }
 
-void board::ans_get_desc_received(QDataStream &stream)
+void Board::ans_get_desc_received(QDataStream &stream)
 {
     if (_read_value_idx < 0 || _read_value_idx >= _list_values.size())
         return;
     qDebug() << "Receive get desc answer";
     QString string = getStringFromStream(stream);
+    BoardValue *value = _list_values.at(_read_value_idx);
+    value->desc = string;
+
+    cmd_get_value_limit(_list_values.at(_read_value_idx)->group(), _list_values.at(_read_value_idx)->id(), true);
+}
+
+void Board::ans_get_limit_low_received(QDataStream &stream)
+{
+    if (_read_value_idx < 0 || _read_value_idx >= _list_values.size())
+        return;
+    BoardValue *value = _list_values.at(_read_value_idx);
+    qDebug() << "Receive get low limit answer";
+
+    QByteArray dataStream;
+    dataStream.reserve(value->size());
+    if (stream.readRawData(dataStream.data(), value->size()) > 0)
+    {
+        value->minVal = value->getStringFromData(dataStream);
+    }
+
+    cmd_get_value_limit(_list_values.at(_read_value_idx)->group(), _list_values.at(_read_value_idx)->id(), false);
+}
+
+void Board::ans_get_limit_high_received(QDataStream &stream)
+{
+    if (_read_value_idx < 0 || _read_value_idx >= _list_values.size())
+        return;
+    BoardValue *value = _list_values.at(_read_value_idx);
+    qDebug() << "Receive get high limit answer";
+
+    QByteArray dataStream;
+    dataStream.reserve(value->size());
+    if (stream.readRawData(dataStream.data(), value->size()) > 0)
+    {
+        value->maxVal = value->getStringFromData(dataStream);
+    }
 
     if (_read_value_idx + 1 < _list_values.size())
     {
         _read_value_idx++;
         cmd_read_value(_list_values.at(_read_value_idx)->group(), _list_values.at(_read_value_idx)->id());
     }
+    else
+    {
+         emit updated();
+    }
 }
 
-void board::answer_received(QByteArray datagram)
+
+void Board::answer_received(QByteArray datagram)
 {
      QDataStream stream(datagram);
      qint8 cmd, ack;
@@ -123,6 +173,12 @@ void board::answer_received(QByteArray datagram)
          break;
      case CODE_CMD_DESC_VALUES:
          ans_get_desc_received(stream);
+         break;
+     case CODE_CMD_READ_VALUES_LIMIT_LOW:
+         ans_get_limit_low_received(stream);
+         break;
+     case CODE_CMD_READ_VALUES_LIMIT_HIGH:
+         ans_get_limit_high_received(stream);
          break;
      default:
          qDebug() << "Unhandled answer " << cmd;

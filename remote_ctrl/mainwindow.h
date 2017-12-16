@@ -9,6 +9,7 @@
 
 #include "boardvalue.h"
 #include "proto.h"
+#include "board.h"
 
 namespace Ui {
     class MainWindow;
@@ -23,32 +24,20 @@ public:
     ~MainWindow();
 
 private slots:
-    void answer_received(QByteArray datagram);
+
     void on_buttonScan_clicked();
     void on_listBoard_currentIndexChanged(int index);
 
-    void ans_who_received(QDataStream &stream);
-    void ans_get_desc_received(QDataStream &stream);
-    void ans_get_limit_low_received(QDataStream &stream);
-    void ans_get_limit_high_received(QDataStream &stream);
-    void ans_list_received(QDataStream &stream);
-    void ans_read_received(QDataStream &stream);
-
     void on_sendValues_clicked();
+
+    void dataReceived();
 
 private:
     void clear_values();
-    void cmd_read_value(quint32 group, quint32 value_idx);
-    void cmd_write_value(quint32 group, quint32 value_idx, QByteArray *buf);
-    void cmd_get_desc_value(quint32 group, quint32 value_idx);
-    void cmd_get_value_limit(quint32 group, quint32 value_idx, bool isLowLimit);
-    QString getStringFromStream(QDataStream &stream);
 
 private:
     Ui::MainWindow *ui;
-    proto * prot;
-    QList<boardValue*> _list_values;
-    int _read_value_idx;              // Current read_value pending
+    Board board;
 };
 
 #endif // MAINWINDOW_H

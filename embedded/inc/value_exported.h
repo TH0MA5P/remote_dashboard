@@ -63,7 +63,7 @@ bool VALUE_EXPORTED_add_Fct(char group[sizeof(uint32_t)],
                             bool writePermission, value_type_t type,
                             void *ptr_value_min,
                             void *ptr_value_max,
-                            char desc[DESC_SIZE]);
+                            char desc[]);
 
 
 #endif /*VALUE_H_*/

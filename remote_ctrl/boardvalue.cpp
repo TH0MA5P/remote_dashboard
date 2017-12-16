@@ -8,7 +8,7 @@
 const int value_type_size[] = {1, 2, 4, 8, 4, 1}; // todo use un common.h
 const char *value_type_name[] = {"int8", "int16", "int32", "int64", "float", "string"};
 
-boardValue::boardValue(struct T_VALUE_INFO value) :
+BoardValue::BoardValue(struct T_VALUE_INFO value) :
     _value(value),
     _editor(0),
     _editorHex(0)
@@ -16,7 +16,7 @@ boardValue::boardValue(struct T_VALUE_INFO value) :
     _data.resize(value_type_size[_value.type] * _value.nb_elem_x * _value.nb_elem_y);
 }
 
-boardValue::boardValue(qint32 group, qint32 id, qint16 nb_x, qint16 nb_y,
+BoardValue::BoardValue(qint32 group, qint32 id, qint16 nb_x, qint16 nb_y,
                        uint8_t readPermission, uint8_t writePermission, uint8_t type) :
     _editor(0),
     _editorHex(0)
@@ -32,7 +32,7 @@ boardValue::boardValue(qint32 group, qint32 id, qint16 nb_x, qint16 nb_y,
     _data.resize(value_type_size[_value.type] * _value.nb_elem_x * _value.nb_elem_y);
 }
 
-QString boardValue::str_id()
+QString BoardValue::str_id()
 {
     char str[5];
     for (int i = 0; i < 4; i++)
@@ -41,7 +41,7 @@ QString boardValue::str_id()
     return QString(str);
 }
 
-QString boardValue::str_group()
+QString BoardValue::str_group()
 {
     char str[5];
     for (int i = 0; i < 4; i++)
@@ -50,7 +50,7 @@ QString boardValue::str_group()
     return QString(str);
 }
 
-QString boardValue::info()
+QString BoardValue::info()
 {
     if (_value.nb_elem_x > 1 && _value.nb_elem_y > 1)
         return QString("%1[%2][%3]").arg(value_type_name[_value.type]).arg(_value.nb_elem_x).arg(_value.nb_elem_y);
@@ -59,7 +59,7 @@ QString boardValue::info()
     return QString(value_type_name[_value.type]);
 }
 
-QString boardValue::convertIntValue(void *src, int base)
+QString BoardValue::convertIntValue(void *src, int base)
 {
     switch (_value.type) {
 	case type_float: {
@@ -77,7 +77,7 @@ QString boardValue::convertIntValue(void *src, int base)
 	}
 }
 
-void boardValue::convertStringToBuf(QDataStream &stream, QString str, int base)
+void BoardValue::convertStringToBuf(QDataStream &stream, QString str, int base)
 {
 	bool ok;
     switch (_value.type) {
@@ -94,7 +94,7 @@ void boardValue::convertStringToBuf(QDataStream &stream, QString str, int base)
 	}
 }
 
-QWidget *boardValue::dataDumpHex()
+QWidget *BoardValue::dataDumpHex()
 {
     if (_editorHex)
         delete _editorHex;
@@ -111,7 +111,7 @@ QWidget *boardValue::dataDumpHex()
 
 #define EDITOR_BASE	10
 
-QString boardValue::getStringFromData(QByteArray &data)
+QString BoardValue::getStringFromData(QByteArray &data)
 {
     QString text("");
     if (_value.type == type_string) {
@@ -133,7 +133,7 @@ QString boardValue::getStringFromData(QByteArray &data)
     return text;
 }
 
-QWidget *boardValue::dataEditor()
+QWidget *BoardValue::dataEditor()
 {
     if (_editor)
         delete _editor;
@@ -148,15 +148,21 @@ QWidget *boardValue::dataEditor()
     return _editor;
 }
 
-bool boardValue::getData(QByteArray &newData)
+void BoardValue::setData(QDataStream &stream)
 {
+    stream.readRawData(_data.data(), _data.size());
+}
+
+bool BoardValue::getData(QByteArray &newData)
+{
+    bool hasChanged;
     if (!_editor || !_editorHex)
         return false;
 
     if (_value.type == type_string)
     {
         QString text = _editor->text();
-        text.truncate(_data.size()-1);
+        text.truncate(_data.size());
         newData = QByteArray(text.toLocal8Bit());
     }
     else
@@ -173,7 +179,10 @@ bool boardValue::getData(QByteArray &newData)
             convertStringToBuf(newStream, arrayStr.at(i), EDITOR_BASE);
         }
     }
-    return (newData != _data);
+    hasChanged = (newData != _data);
+    return hasChanged;
 }
+
+
 
 
